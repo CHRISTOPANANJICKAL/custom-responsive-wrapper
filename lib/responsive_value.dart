@@ -22,8 +22,7 @@ class ResponsiveValue<T> {
 
   final BuildContext context;
 
-  ResponsiveValue(this.context,
-      {required this.defaultValue, required this.valueWhen}) {
+  ResponsiveValue(this.context, {required this.defaultValue, required this.valueWhen}) {
     // Breakpoint reference check. Verify a parent
     // [ResponsiveWrapper] exists if a reference is found.
     if (valueWhen.firstWhereOrNull((element) => element.name != null) != null) {
@@ -31,10 +30,8 @@ class ResponsiveValue<T> {
         ResponsiveWrapper.of(context);
       } catch (e) {
         throw FlutterError.fromParts(<DiagnosticsNode>[
-          ErrorSummary(
-              'A ResponsiveCondition was caught referencing a nonexistant breakpoint.'),
-          ErrorDescription(
-              'A ResponsiveCondition requires a parent ResponsiveWrapper '
+          ErrorSummary('A ResponsiveCondition was caught referencing a nonexistant breakpoint.'),
+          ErrorDescription('A ResponsiveCondition requires a parent ResponsiveWrapper '
               'to reference breakpoints. Add a ResponsiveWrapper or remove breakpoint references.')
         ]);
       }
@@ -42,16 +39,13 @@ class ResponsiveValue<T> {
 
     List<Condition> conditions = [];
     conditions.addAll(valueWhen);
-    List<ResponsiveBreakpointSegment>? segments =
-        ResponsiveWrapper.of(context).breakpointSegments;
+    List<ResponsiveBreakpointSegment>? segments = ResponsiveWrapper.of(context).breakpointSegments;
     conditions = conditions.map((e) {
       if (e.breakpoint == null) {
         return e.copyWith(
             breakpoint: segments
-                .firstWhere(
-                    (element) => element.responsiveBreakpoint.name == e.name,
-                    orElse: () =>
-                        throw ('No breakpoint named `${e.name}` found.'))
+                .firstWhere((element) => element.responsiveBreakpoint.name == e.name,
+                    orElse: () => throw ('No breakpoint named `${e.name}` found.'))
                 .responsiveBreakpoint
                 .breakpoint
                 .toInt());
@@ -68,8 +62,7 @@ class ResponsiveValue<T> {
     Condition? activeCondition = getActiveCondition(context, conditions);
     if (activeCondition == null) return null;
     // Return landscape value if orientation is landscape and landscape override value is provided.
-    if (ResponsiveWrapper.of(context).orientation == Orientation.landscape &&
-        activeCondition.landscapeValue != null) {
+    if (ResponsiveWrapper.of(context).orientation == Orientation.landscape && activeCondition.landscapeValue != null) {
       return activeCondition.landscapeValue;
     }
     // Return active condition value or default value if null.
@@ -88,12 +81,10 @@ class ResponsiveValue<T> {
   ///   a. Named breakpoints.
   ///   b. Unnamed breakpoints.
   /// Returns null if no Active Condition is found.
-  Condition? getActiveCondition(
-      BuildContext context, List<Condition> conditions) {
+  Condition? getActiveCondition(BuildContext context, List<Condition> conditions) {
     Condition? equalsCondition = conditions.firstWhereOrNull((element) {
       if (element.condition == Conditional.EQUALS) {
-        return ResponsiveWrapper.of(context).activeBreakpoint.name ==
-            element.name;
+        return ResponsiveWrapper.of(context).activeBreakpoint.name == element.name;
       }
 
       return false;
@@ -116,8 +107,7 @@ class ResponsiveValue<T> {
       return smallerThanCondition;
     }
 
-    Condition? largerThanCondition =
-        conditions.reversed.firstWhereOrNull((element) {
+    Condition? largerThanCondition = conditions.reversed.firstWhereOrNull((element) {
       if (element.condition == Conditional.LARGER_THAN) {
         if (element.name != null) {
           return ResponsiveWrapper.of(context).isLargerThan(element.name);
@@ -154,12 +144,7 @@ class Condition<T> {
   final T? value;
   final T? landscapeValue;
 
-  const Condition._(
-      {this.breakpoint,
-      this.name,
-      this.condition,
-      this.value,
-      this.landscapeValue})
+  const Condition._({this.breakpoint, this.name, this.condition, this.value, this.landscapeValue})
       : assert(breakpoint != null || name != null),
         assert((condition == Conditional.EQUALS) ? name != null : true);
 
@@ -167,12 +152,10 @@ class Condition<T> {
       : breakpoint = null,
         condition = Conditional.EQUALS;
 
-  const Condition.largerThan(
-      {this.breakpoint, this.name, this.value, this.landscapeValue})
+  const Condition.largerThan({this.breakpoint, this.name, this.value, this.landscapeValue})
       : condition = Conditional.LARGER_THAN;
 
-  const Condition.smallerThan(
-      {this.breakpoint, this.name, this.value, this.landscapeValue})
+  const Condition.smallerThan({this.breakpoint, this.name, this.value, this.landscapeValue})
       : condition = Conditional.SMALLER_THAN;
 
   Condition copyWith({
@@ -219,7 +202,7 @@ class ResponsiveVisibility extends StatelessWidget {
   final bool maintainInteractivity;
 
   const ResponsiveVisibility({
-    Key? key,
+    super.key,
     required this.child,
     this.visible = true,
     this.visibleWhen = const [],
@@ -230,7 +213,7 @@ class ResponsiveVisibility extends StatelessWidget {
     this.maintainSize = false,
     this.maintainSemantics = false,
     this.maintainInteractivity = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -242,9 +225,7 @@ class ResponsiveVisibility extends StatelessWidget {
     conditions.addAll(visibleWhen.map((e) => e.copyWith(value: true)));
     conditions.addAll(hiddenWhen.map((e) => e.copyWith(value: false)));
     // Get visible value from active condition.
-    visibleValue = ResponsiveValue(context,
-            defaultValue: visibleValue, valueWhen: conditions)
-        .value;
+    visibleValue = ResponsiveValue(context, defaultValue: visibleValue, valueWhen: conditions).value;
 
     return Visibility(
       replacement: replacement,
@@ -264,21 +245,14 @@ class ResponsiveConstraints extends StatelessWidget {
   final BoxConstraints? constraint;
   final List<Condition> constraintsWhen;
 
-  const ResponsiveConstraints(
-      {Key? key,
-      required this.child,
-      this.constraint,
-      this.constraintsWhen = const []})
-      : super(key: key);
+  const ResponsiveConstraints({super.key, required this.child, this.constraint, this.constraintsWhen = const []});
 
   @override
   Widget build(BuildContext context) {
     // Initialize mutable value holders.
     BoxConstraints? constraintValue = constraint;
     // Get value from active condition.
-    constraintValue = ResponsiveValue(context,
-            defaultValue: constraintValue, valueWhen: constraintsWhen)
-        .value;
+    constraintValue = ResponsiveValue(context, defaultValue: constraintValue, valueWhen: constraintsWhen).value;
 
     return Container(
       constraints: constraintValue,
